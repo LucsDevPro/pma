@@ -31,3 +31,5 @@ table.rt td.b{font-weight:700;color:var(--bl)}
  table.rt td.s .cp{float:right;color:#fff;border-color:#fff}
  table.rt td.v::before{content:attr(data-label);display:block;font-size:.68rem;font-weight:400;color:var(--su)}
 }
+.ck{width:16px;height:16px;margin:0 8px 0 0;vertical-align:middle;accent-color:var(--ac);cursor:pointer}
+table.rt tr.marcada td:not(.s){background:#E4F1FB}
