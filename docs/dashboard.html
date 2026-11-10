@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dashboard — Bloqueios e resultados eVisita</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="estilo.css">
 <style>
-:root{--bg:#f5f6f8;--card:#fff;--tx:#1d2733;--su:#5b6778;--bd:#cfd6e0;--az:#4472c4;--bl:#d9622b;--hl:#fdf1ea}
-@media(prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--tx:#e6ebf2;--su:#9aa6b6;--bd:#3a4452;--az:#5b86d6;--bl:#f08a52;--hl:#2e2019}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",system-ui,Arial,sans-serif}
 main{max-width:1200px;margin:0 auto;padding:18px 14px 40px}h1{font-size:1.35rem;margin:0}.su{color:var(--su);font-size:.85rem}
 .bar{display:flex;gap:8px;align-items:center;margin:12px 0}.bar .sp{flex:1}
@@ -19,15 +19,12 @@ button[aria-pressed=true]{background:var(--az);border-color:var(--az);color:#fff
 .card h2{font-size:1rem;margin:0 0 6px}.card.d{border-color:var(--bl)}.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
 .aviso{background:var(--hl);border:1px solid var(--bl);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:.88rem}
 svg{width:100%;height:auto;display:block}svg text{fill:var(--su);font-size:11px}
-.w{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.84rem}
-th,td{border:1px solid var(--bd);padding:6px 9px;text-align:center;white-space:nowrap}th{background:var(--az);color:#fff}
-td:first-child{text-align:left}td.b{font-weight:700;color:var(--bl)}
 </style>
 </head>
 <body>
+<header class="topo"><img src="logo.png" alt="Prefeitura Municipal de Ponta Porã"><div><h1>Bloqueios e resultados por <span id="tit">semana</span></h1><div class="su" id="sub">Carregando…</div></div></header>
+<div class="faixa"></div>
 <main>
-<h1>Bloqueios e resultados por <span id="tit">semana</span></h1>
-<div class="su" id="sub">Carregando…</div>
 <div class="bar">
   <button id="bs" aria-pressed="true">Semana</button><button id="bm" aria-pressed="false">Mês</button>
   <span class="sp"></span><a href="index.html"><button>Totais (tabela)</button></a>
@@ -45,6 +42,7 @@ td:first-child{text-align:left}td.b{font-weight:700;color:var(--bl)}
 <div class="su">Mês de cada semana = mês onde cai a maioria dos dias (domingo a sábado). O último período pode estar em andamento.
 Pendência no mês é recalculada sobre os totais; cobertura do mês é a soma das semanas.</div>
 </main>
+<script src="comum.js"></script>
 <script>
 const BLOQUEIOS_URL = "bloqueios.csv";   // pode apontar para uma planilha publicada como CSV
 const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
@@ -107,14 +105,17 @@ function desenhar() {
     kpi("Imóveis trabalhados — " + u.r, n0(u.trab), a ? a.trab : null, false) +
     kpi("Pendência — " + u.r, n2(u.pd) + "%", null, false) +
     kpi("Cobertura — " + u.r, n2(u.cob) + "%", null, false);
-  barras("c-bloq", P, "bloq", n0, "--bl"); barras("c-trab", P, "trab", n0, "--az");
-  barras("c-pend", P, "pd", n2, "--az"); barras("c-foco", P, "foco", n0, "--az");
-  barras("c-cob", P, "cob", n2, "--az");
+  barras("c-bloq", P, "bloq", n0, "--bl"); barras("c-trab", P, "trab", n0, "--ac");
+  barras("c-pend", P, "pd", n2, "--ac"); barras("c-foco", P, "foco", n0, "--ac");
+  barras("c-cob", P, "cob", n2, "--ac");
   const cab = ["Período", "Bloqueios", "Quarteirões UBV", "Imóveis trab.", "Pendentes", "Pendência %", "Cobertura %", "Com foco"];
-  const lin = [...P].reverse().map(p => `<tr><td>${p.r}</td><td class="b">${n0(p.bloq)}</td><td>${n0(p.ubv)}</td>` +
-    `<td>${n0(p.trab)}</td><td>${n0(p.pend)}</td><td>${n2(p.pd)}</td><td>${n2(p.cob)}</td><td>${n0(p.foco)}</td></tr>`).join("");
+  const lin = [...P].reverse().map(p => {
+    const v = [n0(p.bloq), n0(p.ubv), n0(p.trab), n0(p.pend), n2(p.pd), n2(p.cob), n0(p.foco)];
+    return `<tr><td class="s"><span class="l">${p.r}</span><button class="cp" title="Copiar os valores desta linha">Copiar</button></td>` +
+      v.map((x, i) => `<td class="v${i ? "" : " b"}" data-label="${cab[i + 1]}">${x}</td>`).join("") + "</tr>";
+  }).join("");
   document.getElementById("tab").innerHTML =
-    `<table><thead><tr>${cab.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${lin}</tbody></table>`;
+    `<table class="rt"><thead><tr>${cab.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${lin}</tbody></table>`;
   document.getElementById("bs").setAttribute("aria-pressed", modo === "semana");
   document.getElementById("bm").setAttribute("aria-pressed", modo === "mes");
 }

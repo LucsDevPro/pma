@@ -4,129 +4,69 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Totais por semana — eVisita Ponta Porã</title>
-<style>
-  :root {
-    --bg: #f5f6f8; --card: #ffffff; --texto: #1d2733; --suave: #5b6778;
-    --borda: #cfd6e0; --azul: #4472c4; --azul-texto: #ffffff; --destaque: #eef3fb;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #12161c; --card: #1b212a; --texto: #e6ebf2; --suave: #9aa6b6;
-      --borda: #3a4452; --azul: #3a5fa8; --azul-texto: #ffffff; --destaque: #232c39;
-    }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--texto);
-         font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
-  main { max-width: 1400px; margin: 0 auto; padding: 20px 16px 40px; }
-  h1 { font-size: 1.4rem; margin: 0 0 4px; }
-  .sub { color: var(--suave); font-size: .9rem; margin-bottom: 16px; }
-  .barra { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
-  button { font: inherit; cursor: pointer; border: 1px solid var(--borda); background: var(--card);
-           color: var(--texto); padding: 8px 14px; border-radius: 8px; }
-  button[aria-selected="true"] { background: var(--azul); color: var(--azul-texto); border-color: var(--azul); }
-  .espaco { flex: 1; }
-  .tabela-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--borda); border-radius: 10px; }
-  table { border-collapse: collapse; width: 100%; font-size: .85rem; }
-  th, td { border: 1px solid var(--borda); padding: 7px 10px; text-align: center; white-space: nowrap; }
-  th { background: var(--azul); color: var(--azul-texto); position: sticky; top: 0; }
-  td:first-child, th:first-child { text-align: left; position: sticky; left: 0; background: var(--card); }
-  th:first-child { background: var(--azul); }
-  tr.atual td { background: var(--destaque); font-weight: 600; }
-  tr.atual td:first-child { background: var(--destaque); }
-  .nota { color: var(--suave); font-size: .8rem; margin-top: 10px; }
-  .erro { padding: 16px; border: 1px solid var(--borda); border-radius: 10px; background: var(--card); }
-</style>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="estilo.css">
 </head>
 <body>
+<header class="topo"><img src="logo.png" alt="Prefeitura Municipal de Ponta Porã">
+  <div><h1>Totais por semana — eVisita</h1><div class="su" id="sub">Carregando…</div></div></header>
+<div class="faixa"></div>
 <main>
-  <h1>Totais por semana — eVisita</h1>
-  <div class="sub" id="sub">Carregando…</div>
-
-  <div class="barra">
-    <button id="aba-estadual" role="tab" aria-selected="true">Planilha Estadual</button>
-    <button id="aba-coordenada" role="tab" aria-selected="false">Resposta Coordenada</button>
-    <span class="espaco"></span>
+  <div class="bar">
+    <button id="aba-estadual" aria-selected="true">Planilha Estadual</button>
+    <button id="aba-coordenada" aria-selected="false">Resposta Coordenada</button>
+    <span class="sp"></span>
     <a href="dashboard.html"><button>Dashboard</button></a>
-    <button id="copiar" title="Copia a tabela para colar no Excel">Copiar tabela</button>
+    <button id="copiar">Copiar tabela</button>
   </div>
-
   <div id="conteudo"></div>
   <div class="nota" id="nota"></div>
 </main>
-
+<script src="comum.js"></script>
 <script>
-const PERCENTUAIS = new Set(["IIP", "IB", "Índice de pendência (%)", "Cobertura (%)"]);
-let dados = null;
-let aba = "estadual";
-
-const fmtData = iso => iso.split("-").reverse().slice(0, 2).join("/");
-
-function formatar(valor, coluna) {
-  if (PERCENTUAIS.has(coluna)) {
-    return Number(valor).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-  return Number(valor).toLocaleString("pt-BR", { maximumFractionDigits: 2 });
-}
+const PERC = new Set(["IIP", "IB", "Índice de pendência (%)", "Cobertura (%)"]);
+let dados = null, aba = "estadual";
+const dm = iso => iso.split("-").reverse().slice(0, 2).join("/");
+const fmt = (v, c) => Number(v).toLocaleString("pt-BR", PERC.has(c)
+  ? {minimumFractionDigits: 2, maximumFractionDigits: 2} : {maximumFractionDigits: 2});
 
 function montar() {
-  const colunas = aba === "estadual" ? dados.colunas_estadual : dados.colunas_coordenada;
-  const semanas = [...dados.semanas].sort((a, b) => b.id_semana - a.id_semana);   // mais recente primeiro
-  const ultima = semanas.length ? semanas[0].id_semana : null;
-
-  const cab = ["Semana", ...colunas].map(c => `<th>${c}</th>`).join("");
-  const linhas = semanas.map(s => {
-    const valores = aba === "estadual" ? s.estadual : s.coordenada;
-    const rotulo = `Semana ${s.semana} (${fmtData(s.inicio)} a ${fmtData(s.fim)})`;
-    const tds = valores.map((v, i) => `<td>${formatar(v, colunas[i])}</td>`).join("");
-    return `<tr class="${s.id_semana === ultima ? "atual" : ""}"><td>${rotulo}</td>${tds}</tr>`;
+  const cols = aba === "estadual" ? dados.colunas_estadual : dados.colunas_coordenada;
+  const sem = [...dados.semanas].sort((a, b) => b.id_semana - a.id_semana);
+  const cab = ["Semana", ...cols].map(c => `<th>${c}</th>`).join("");
+  const lin = sem.map((s, i) => {
+    const v = aba === "estadual" ? s.estadual : s.coordenada;
+    return `<tr class="${i === 0 ? "atual" : ""}"><td class="s"><span class="l">Semana ${s.semana} (${dm(s.inicio)} a ${dm(s.fim)})</span>` +
+      `<button class="cp" title="Copiar só os valores desta linha">Copiar</button></td>` +
+      v.map((x, j) => `<td class="v" data-label="${cols[j]}">${fmt(x, cols[j])}</td>`).join("") + "</tr>";
   }).join("");
-
-  document.getElementById("conteudo").innerHTML =
-    `<div class="tabela-wrap"><table id="tabela"><thead><tr>${cab}</tr></thead><tbody>${linhas}</tbody></table></div>`;
+  document.getElementById("conteudo").innerHTML = `<table class="rt" id="tabela"><thead><tr>${cab}</tr></thead><tbody>${lin}</tbody></table>`;
 }
 
-function trocar(nova) {
-  aba = nova;
-  document.getElementById("aba-estadual").setAttribute("aria-selected", nova === "estadual");
-  document.getElementById("aba-coordenada").setAttribute("aria-selected", nova === "coordenada");
+function trocar(n) {
+  aba = n;
+  document.getElementById("aba-estadual").setAttribute("aria-selected", n === "estadual");
+  document.getElementById("aba-coordenada").setAttribute("aria-selected", n === "coordenada");
   montar();
 }
-
 document.getElementById("aba-estadual").onclick = () => dados && trocar("estadual");
 document.getElementById("aba-coordenada").onclick = () => dados && trocar("coordenada");
-
-document.getElementById("copiar").onclick = async () => {
-  const t = document.getElementById("tabela");
-  if (!t) return;
-  const tsv = [...t.rows].map(r => [...r.cells].map(c => c.textContent).join("\t")).join("\n");
-  try {
-    await navigator.clipboard.writeText(tsv);
-    const b = document.getElementById("copiar"), antes = b.textContent;
-    b.textContent = "Copiado!";
-    setTimeout(() => (b.textContent = antes), 1500);
-  } catch (e) {
-    alert("Não foi possível copiar automaticamente. Selecione a tabela e copie manualmente.");
-  }
+document.getElementById("copiar").onclick = e => {
+  const t = document.getElementById("tabela"); if (!t) return;
+  copiarTexto([...t.rows].map(r => [...r.cells].map(c => (c.querySelector(".l") || c).textContent).join("\t")).join("\n"), e.target);
 };
 
-fetch("dados.json", { cache: "no-store" })
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-  .then(d => {
-    dados = d;
-    const atual = new Date(d.atualizado_em);
-    document.getElementById("sub").textContent =
-      `${d.municipio} · atualizado em ${atual.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}`;
-    document.getElementById("nota").textContent =
-      "Linha destacada = semana mais recente (pode estar em andamento e ainda ser atualizada nas próximas coletas). " +
-      "Valores TOTAL de cada semana: RURAL + P.E. + URBANA, conforme as regras das planilhas oficiais.";
-    montar();
-  })
-  .catch(() => {
-    document.getElementById("sub").textContent = "";
-    document.getElementById("conteudo").innerHTML =
-      '<div class="erro">Ainda não há dados publicados. Aguarde a primeira coleta automática.</div>';
-  });
+fetch("dados.json", {cache: "no-store"}).then(r => { if (!r.ok) throw 0; return r.json(); }).then(d => {
+  dados = d;
+  document.getElementById("sub").textContent = d.municipio + " · atualizado em " +
+    new Date(d.atualizado_em).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"});
+  document.getElementById("nota").textContent = "Linha destacada = semana mais recente (pode estar em andamento). " +
+    "TOTAL de cada semana = RURAL + P.E. + URBANA. O botão Copiar da linha copia só os valores, na ordem das colunas da planilha oficial.";
+  montar();
+}).catch(() => {
+  document.getElementById("sub").textContent = "";
+  document.getElementById("conteudo").innerHTML = '<div class="erro">Ainda não há dados publicados. Aguarde a primeira coleta automática.</div>';
+});
 </script>
 </body>
 </html>
