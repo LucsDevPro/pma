@@ -37,7 +37,7 @@ function montar() {
   const cab = ["Semana", ...cols].map(c => `<th>${c}</th>`).join("");
   const lin = sem.map((s, i) => {
     const v = aba === "estadual" ? s.estadual : s.coordenada;
-    return `<tr class="${i === 0 ? "atual" : ""}"><td class="s"><input type="checkbox" class="ck" aria-label="Selecionar linha"><span class="l">Semana ${s.semana} (${dm(s.inicio)} a ${dm(s.fim)})</span>` +
+    return `<tr class="${i === 0 ? "atual" : ""}"><td class="s"><input type="checkbox" class="ck" aria-label="Selecionar linha"><span class="l">Semana ${s.semana} · id ${s.id_semana} (${dm(s.inicio)} a ${dm(s.fim)})</span>` +
       `<button class="cp" title="Copiar só os valores desta linha">Copiar</button></td>` +
       v.map((x, j) => `<td class="v" data-label="${cols[j]}">${fmt(x, cols[j])}</td>`).join("") + "</tr>";
   }).join("");

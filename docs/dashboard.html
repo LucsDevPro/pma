@@ -66,11 +66,12 @@ function periodos() {
   const g = new Map();
   for (const s of S) {
     const {k, r} = chave(s), c = s.coordenada;
-    const o = g.get(k) || {r, trab: 0, pend: 0, bloq: 0, foco: 0, cob: 0};
-    o.trab += c[0]; o.pend += c[1]; o.cob += c[5]; o.foco += s.estadual[1]; o.bloq += (B[s.semana] || 0);
+    const o = g.get(k) || {r, trab: 0, pend: 0, bloq: 0, foco: 0, cob: 0, a: s.id_semana, sa: s.semana};
+    o.trab += c[0]; o.pend += c[1]; o.cob += c[5]; o.foco += s.estadual[1]; o.bloq += (B[s.semana] || 0); o.b = s.id_semana; o.sb = s.semana;
     g.set(k, o);
   }
-  const P = [...g.keys()].sort((a, b) => a - b).map(k => { const o = g.get(k); o.pd = pct(o.pend, o.trab + o.pend); return o; });
+  const P = [...g.keys()].sort((a, b) => a - b).map(k => { const o = g.get(k); o.pd = pct(o.pend, o.trab + o.pend);
+    o.det = o.a === o.b ? `Semana ${o.sa} · id ${o.a}` : `${o.r} · semanas ${o.sa}–${o.sb} (ids ${o.a}–${o.b})`; return o; });
   const n = +$("per").value;
   return n ? P.slice(-n) : P;
 }
@@ -94,7 +95,7 @@ function grafico(id, P, campo, fmt, cor, tipo) {
   const passo = Math.ceil(n / 14);
   P.forEach((p, i) => {
     if (i % passo === 0) t += `<text x="${cx(i)}" y="${H - 10}" text-anchor="middle">${p.r}</text>`;
-    t += `<rect class="hit" x="${m.l + bw * i}" y="${m.t}" width="${bw}" height="${h}" data-t="${p.r}: ${fmt(p[campo])}"/>`;
+    t += `<rect class="hit" x="${m.l + bw * i}" y="${m.t}" width="${bw}" height="${h}" data-t="${p.det}: ${fmt(p[campo])}"/>`;
   });
   $(id).innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img">${t}</svg>`;
 }
@@ -128,7 +129,7 @@ function desenhar() {
   const cab = ["Período", "Bloqueios", "Imóveis trab.", "Pendentes", "Pendência %", "Cobertura %", "Com foco"];
   const lin = [...P].reverse().map(p => {
     const v = [n0(p.bloq), n0(p.trab), n0(p.pend), n2(p.pd), n2(p.cob), n0(p.foco)];
-    return `<tr><td class="s"><input type="checkbox" class="ck" aria-label="Selecionar linha"><span class="l">${p.r}</span><button class="cp" title="Copiar os valores desta linha">Copiar</button></td>` +
+    return `<tr><td class="s"><input type="checkbox" class="ck" aria-label="Selecionar linha"><span class="l">${p.det}</span><button class="cp" title="Copiar os valores desta linha">Copiar</button></td>` +
       v.map((x, i) => `<td class="v${i ? "" : " b"}" data-label="${cab[i + 1]}">${x}</td>`).join("") + "</tr>";
   }).join("");
   $("tab").innerHTML = `<table class="rt"><thead><tr>${cab.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${lin}</tbody></table>`;
