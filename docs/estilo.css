@@ -1,7 +1,6 @@
 /* Cores do logo da Prefeitura de Ponta Porã */
-:root{--navy:#1B2F66;--ac:#1E8FD5;--verde:#2DB432;--turq:#35BDC9;--verm:#D0283C;--amar:#F4B31F;
+:root{color-scheme:light;--navy:#1B2F66;--ac:#1E8FD5;--verde:#2DB432;--turq:#35BDC9;--verm:#D0283C;--amar:#F4B31F;
 --bg:#F3F7FB;--card:#fff;--tx:#16264D;--su:#5A6B8C;--bd:#D5DFEC;--az:#1B2F66;--bl:#1F8F25;--hl:#EAF7EC}
-@media(prefers-color-scheme:dark){:root{--bg:#0E1630;--card:#16224A;--tx:#E8EEFA;--su:#9FB0D3;--bd:#2C3C6E;--az:#2B4A9E;--bl:#52D158;--hl:#16301F}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",system-ui,Arial,sans-serif}
 main{max-width:1500px;margin:0 auto;padding:16px 14px 40px}
