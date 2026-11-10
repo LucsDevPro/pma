@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — Bloqueios e resultados eVisita</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--tx:#1d2733;--su:#5b6778;--bd:#cfd6e0;--az:#4472c4;--bl:#d9622b;--hl:#fdf1ea}
+@media(prefers-color-scheme:dark){:root{--bg:#12161c;--card:#1b212a;--tx:#e6ebf2;--su:#9aa6b6;--bd:#3a4452;--az:#5b86d6;--bl:#f08a52;--hl:#2e2019}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",system-ui,Arial,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:18px 14px 40px}h1{font-size:1.35rem;margin:0}.su{color:var(--su);font-size:.85rem}
+.bar{display:flex;gap:8px;align-items:center;margin:12px 0}.bar .sp{flex:1}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 14px;border-radius:8px}
+button[aria-pressed=true]{background:var(--az);border-color:var(--az);color:#fff}a{color:inherit;text-decoration:none}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.k{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px}.k b{display:block;font-size:1.6rem;margin-top:2px}
+.k.d{border-color:var(--bl);background:var(--hl)}.k.d b{color:var(--bl);font-size:2rem}.k small{color:var(--su)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px}
+.card h2{font-size:1rem;margin:0 0 6px}.card.d{border-color:var(--bl)}.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.aviso{background:var(--hl);border:1px solid var(--bl);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:.88rem}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--su);font-size:11px}
+.w{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:.84rem}
+th,td{border:1px solid var(--bd);padding:6px 9px;text-align:center;white-space:nowrap}th{background:var(--az);color:#fff}
+td:first-child{text-align:left}td.b{font-weight:700;color:var(--bl)}
+</style>
+</head>
+<body>
+<main>
+<h1>Bloqueios e resultados por <span id="tit">semana</span></h1>
+<div class="su" id="sub">Carregando…</div>
+<div class="bar">
+  <button id="bs" aria-pressed="true">Semana</button><button id="bm" aria-pressed="false">Mês</button>
+  <span class="sp"></span><a href="index.html"><button>Totais (tabela)</button></a>
+</div>
+<div id="aviso"></div>
+<div class="kpis" id="kpis"></div>
+<div class="card d"><h2>Bloqueios de transmissão realizados</h2><div id="c-bloq"></div></div>
+<div class="g2">
+  <div class="card"><h2>Imóveis trabalhados</h2><div id="c-trab"></div></div>
+  <div class="card"><h2>Índice de pendência (%)</h2><div id="c-pend"></div></div>
+  <div class="card"><h2>Imóveis trabalhados com foco</h2><div id="c-foco"></div></div>
+  <div class="card"><h2>Cobertura (%)</h2><div id="c-cob"></div></div>
+</div>
+<div class="card"><h2>Detalhamento</h2><div class="w" id="tab"></div></div>
+<div class="su">Mês de cada semana = mês onde cai a maioria dos dias (domingo a sábado). O último período pode estar em andamento.
+Pendência no mês é recalculada sobre os totais; cobertura do mês é a soma das semanas.</div>
+</main>
+<script>
+const BLOQUEIOS_URL = "bloqueios.csv";   // pode apontar para uma planilha publicada como CSV
+const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+let S = [], B = {}, modo = "semana";
+const n0 = v => Number(v).toLocaleString("pt-BR", {maximumFractionDigits: 0});
+const n2 = v => Number(v).toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const pct = (a, b) => b ? a / b * 100 : 0;
+
+function chave(s) {
+  if (modo === "semana") return {k: s.id_semana, r: "S" + s.semana};
+  const d = new Date(s.inicio + "T12:00:00"); d.setDate(d.getDate() + 3);   // dia do meio da semana
+  const m = d.getMonth(), a = d.getFullYear();
+  return {k: a * 12 + m, r: MESES[m] + "/" + String(a).slice(2)};
+}
+
+function agregar() {
+  const g = new Map();
+  for (const s of S) {
+    const {k, r} = chave(s), c = s.coordenada, e = s.estadual, x = B[s.semana] || [0, 0];
+    const o = g.get(k) || {r, trab: 0, pend: 0, bloq: 0, ubv: 0, foco: 0, cob: 0, n: 0};
+    o.trab += c[0]; o.pend += c[1]; o.cob += c[5]; o.foco += e[1];
+    o.bloq += x[0]; o.ubv += x[1]; o.n++; g.set(k, o);
+  }
+  return [...g.keys()].sort((a, b) => a - b).map(k => {
+    const o = g.get(k); o.pd = pct(o.pend, o.trab + o.pend); return o;
+  });
+}
+
+function barras(id, P, campo, fmt, cor) {
+  const W = 700, H = 200, m = {l: 8, r: 8, t: 18, b: 24}, w = W - m.l - m.r, h = H - m.t - m.b;
+  const mx = Math.max(...P.map(p => p[campo]), 1), bw = w / P.length;
+  let t = "";
+  P.forEach((p, i) => {
+    const bh = p[campo] / mx * h, x = m.l + i * bw + bw * 0.15, y = m.t + h - bh;
+    t += `<rect x="${x}" y="${y}" width="${bw * 0.7}" height="${bh}" rx="2" fill="var(${cor})"/>`;
+    t += `<text x="${x + bw * 0.35}" y="${y - 4}" text-anchor="middle">${fmt(p[campo])}</text>`;
+    t += `<text x="${x + bw * 0.35}" y="${H - 6}" text-anchor="middle">${p.r}</text>`;
+  });
+  document.getElementById(id).innerHTML =
+    `<svg viewBox="0 0 ${W} ${H}" role="img"><line x1="${m.l}" x2="${W - m.r}" y1="${m.t + h}" y2="${m.t + h}" stroke="var(--bd)"/>${t}</svg>`;
+}
+
+function kpi(rot, v, ant, dest) {
+  const dif = ant === null ? "" : (v - ant >= 0 ? "▲ " : "▼ ") + n0(Math.abs(v - ant)) + " vs. anterior";
+  return `<div class="k${dest ? " d" : ""}"><small>${rot}</small><b>${v}</b><small>${dif}</small></div>`;
+}
+
+function desenhar() {
+  const P = agregar(), u = P[P.length - 1], a = P[P.length - 2];
+  const tem = P.some(p => p.bloq || p.ubv);
+  document.getElementById("tit").textContent = modo;
+  document.getElementById("aviso").innerHTML = tem ? "" :
+    '<div class="aviso"><b>Bloqueios ainda não informados.</b> Preencha <code>docs/bloqueios.csv</code> ' +
+    '(semana, bloqueios, quarteiroes_ubv) — o eVisita não fornece esse dado.</div>';
+  const ac = P.reduce((s, p) => s + p.bloq, 0);
+  document.getElementById("kpis").innerHTML =
+    kpi("Bloqueios — " + u.r, n0(u.bloq), a ? a.bloq : null, true) +
+    kpi("Bloqueios acumulados", n0(ac), null, true) +
+    kpi("Quarteirões UBV — " + u.r, n0(u.ubv), a ? a.ubv : null, false) +
+    kpi("Imóveis trabalhados — " + u.r, n0(u.trab), a ? a.trab : null, false) +
+    kpi("Pendência — " + u.r, n2(u.pd) + "%", null, false) +
+    kpi("Cobertura — " + u.r, n2(u.cob) + "%", null, false);
+  barras("c-bloq", P, "bloq", n0, "--bl"); barras("c-trab", P, "trab", n0, "--az");
+  barras("c-pend", P, "pd", n2, "--az"); barras("c-foco", P, "foco", n0, "--az");
+  barras("c-cob", P, "cob", n2, "--az");
+  const cab = ["Período", "Bloqueios", "Quarteirões UBV", "Imóveis trab.", "Pendentes", "Pendência %", "Cobertura %", "Com foco"];
+  const lin = [...P].reverse().map(p => `<tr><td>${p.r}</td><td class="b">${n0(p.bloq)}</td><td>${n0(p.ubv)}</td>` +
+    `<td>${n0(p.trab)}</td><td>${n0(p.pend)}</td><td>${n2(p.pd)}</td><td>${n2(p.cob)}</td><td>${n0(p.foco)}</td></tr>`).join("");
+  document.getElementById("tab").innerHTML =
+    `<table><thead><tr>${cab.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${lin}</tbody></table>`;
+  document.getElementById("bs").setAttribute("aria-pressed", modo === "semana");
+  document.getElementById("bm").setAttribute("aria-pressed", modo === "mes");
+}
+
+function lerCSV(txt) {
+  const o = {};
+  for (const l of txt.split(/\r?\n/)) {
+    const c = l.trim().split(/[;,\t]/);
+    if (/^\d+$/.test(c[0])) o[+c[0]] = [+(c[1] || 0) || 0, +(c[2] || 0) || 0];
+  }
+  return o;
+}
+
+document.getElementById("bs").onclick = () => { modo = "semana"; desenhar(); };
+document.getElementById("bm").onclick = () => { modo = "mes"; desenhar(); };
+
+Promise.all([
+  fetch("dados.json", {cache: "no-store"}).then(r => { if (!r.ok) throw 0; return r.json(); }),
+  fetch(BLOQUEIOS_URL, {cache: "no-store"}).then(r => r.ok ? r.text() : "").catch(() => "")
+]).then(([d, csv]) => {
+  S = [...d.semanas].sort((a, b) => a.id_semana - b.id_semana); B = lerCSV(csv);
+  document.getElementById("sub").textContent = d.municipio + " · atualizado em " +
+    new Date(d.atualizado_em).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"});
+  desenhar();
+}).catch(() => { document.getElementById("sub").textContent = "Ainda não há dados publicados."; });
+</script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+# Renomeie para credenciais_local.py (esse arquivo é ignorado pelo Git) e preencha.
+USUARIO = "seu_cpf"
+SENHA = "sua_senha"

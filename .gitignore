@@ -1,0 +1,6 @@
+credenciais_local.py
+__pycache__/
+*.pyc
+relatorios/
+*.xlsx
+.venv/

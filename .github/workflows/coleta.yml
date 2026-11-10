@@ -1,0 +1,58 @@
+name: Coleta eVisita
+
+on:
+  schedule:
+    # Segunda e terça, 03:00 em Ponta Porã (UTC-4) = 07:00 UTC. O GitHub pode atrasar alguns minutos.
+    - cron: "0 7 * * 1,2"
+  workflow_dispatch:
+    inputs:
+      tudo:
+        description: "Recoletar tudo, da semana 35 (id 322) até a semana atual"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coleta-evisita
+  cancel-in-progress: false
+
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Coletar dados do eVisita
+        env:
+          EVISITA_USUARIO: ${{ secrets.EVISITA_USUARIO }}
+          EVISITA_SENHA: ${{ secrets.EVISITA_SENHA }}
+          EVISITA_HEADLESS: "1"
+          PE_EXISTENTE: ${{ vars.PE_EXISTENTE }}
+          TUDO: ${{ inputs.tudo }}
+        run: |
+          if [ "$TUDO" = "true" ]; then
+            python coleta_automatica.py --tudo
+          else
+            python coleta_automatica.py
+          fi
+
+      # roda mesmo se alguma semana falhou, para publicar as que deram certo
+      - name: Publicar dados
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/dados.json
+          git diff --cached --quiet || git commit -m "Atualiza dados $(date -u +%F)"
+          git push
