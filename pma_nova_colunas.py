@@ -20,6 +20,7 @@ GERAR_INDIVIDUAL_PADRAO = True   # checkbox "relatório individual por semana" j
 GERAR_TOTAL_PADRAO = True        # checkbox "planilha total (várias semanas)" já marcado?
 TIMEOUT_COMANDO = 600       # segundos que o Selenium espera uma resposta do navegador (padrão era 120)
 TIMEOUT_PAGINA = 300        # segundos para uma página terminar de carregar
+ESTRATEGIA_CARGA = "eager"  # "eager" = não espera imagens/scripts externos lentos (só o HTML); "normal" = espera tudo
 # =========================================================================
 
 # ================= CONFIG =================
@@ -88,6 +89,7 @@ def criar_driver():
     opt.add_argument("--window-size=1920,1080")
     opt.add_argument("--log-level=3")
     opt.add_experimental_option("excludeSwitches", ["enable-logging"])
+    opt.page_load_strategy = ESTRATEGIA_CARGA
     driver = webdriver.Chrome(options=opt)
     try:
         driver.command_executor._client_config.timeout = TIMEOUT_COMANDO

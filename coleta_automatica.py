@@ -19,6 +19,7 @@ import time
 import datetime as dt
 
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -121,8 +122,11 @@ def fazer_login(driver, usuario, senha):
     wait.until(EC.presence_of_element_located((By.NAME, "cpf"))).send_keys(usuario)
     driver.find_element(By.ID, "senha").send_keys(senha)
     time.sleep(1)
-    driver.find_element(By.CSS_SELECTOR, "button.btn-success[type=submit]").click()
-    WebDriverWait(driver, 30).until(lambda d: "login" not in d.current_url)
+    try:
+        driver.find_element(By.CSS_SELECTOR, "button.btn-success[type=submit]").click()
+    except TimeoutException:
+        print("⚠️ A página pós-login demorou a carregar; verificando se o login foi concluído...")
+    WebDriverWait(driver, 120).until(lambda d: "login" not in d.current_url)
 
 
 # ================= SESSÃO / SEMANA =================
@@ -136,7 +140,14 @@ def nova_sessao(usuario, senha, antiga=None):
         except Exception:
             pass
     driver = base.criar_driver()
-    fazer_login(driver, usuario, senha)
+    try:
+        fazer_login(driver, usuario, senha)
+    except Exception:
+        try:
+            driver.quit()
+        except Exception:
+            pass
+        raise
     return driver
 
 
@@ -178,9 +189,18 @@ def main():
     driver = None
 
     try:
-        print("🔐 Login...")
-        driver = nova_sessao(usuario, senha)
-        print("✅ Login OK")
+        for t in range(1, TENTATIVAS + 1):
+            print(f"🔐 Login (tentativa {t}/{TENTATIVAS})...")
+            try:
+                driver = nova_sessao(usuario, senha)
+                print("✅ Login OK")
+                break
+            except Exception as e:
+                print(f"❌ Login falhou: {str(e).splitlines()[0] if str(e) else type(e).__name__}")
+                if t < TENTATIVAS:
+                    time.sleep(30)
+        if driver is None:
+            raise SystemExit("⛔ Não foi possível fazer login no eVisita após várias tentativas. Nada foi gravado.")
 
         for n, sid in enumerate(ids, start=1):
             real = sid - base.DESLOC_SEMANA
