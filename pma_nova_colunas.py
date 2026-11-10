@@ -18,6 +18,8 @@ from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 MARGEM_COLUNA = 0           # folga extra na largura das colunas (0 = ajuste exato; 1, 2... = mais folga)
 GERAR_INDIVIDUAL_PADRAO = True   # checkbox "relatório individual por semana" já marcado?
 GERAR_TOTAL_PADRAO = True        # checkbox "planilha total (várias semanas)" já marcado?
+TIMEOUT_COMANDO = 600       # segundos que o Selenium espera uma resposta do navegador (padrão era 120)
+TIMEOUT_PAGINA = 300        # segundos para uma página terminar de carregar
 # =========================================================================
 
 # ================= CONFIG =================
@@ -86,7 +88,13 @@ def criar_driver():
     opt.add_argument("--window-size=1920,1080")
     opt.add_argument("--log-level=3")
     opt.add_experimental_option("excludeSwitches", ["enable-logging"])
-    return webdriver.Chrome(options=opt)
+    driver = webdriver.Chrome(options=opt)
+    try:
+        driver.command_executor._client_config.timeout = TIMEOUT_COMANDO
+    except Exception:
+        pass
+    driver.set_page_load_timeout(TIMEOUT_PAGINA)
+    return driver
 
 # ================= UTILS =================
 def num(txt):

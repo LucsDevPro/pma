@@ -29,8 +29,9 @@ Coleta automática no eVisita e página com **o TOTAL de cada semana** nas duas 
 - O eVisita pode recusar acessos vindos dos servidores do GitHub (ficam fora do Brasil). Teste uma vez com
   *Run workflow*; se o login falhar, o log do Actions mostra o erro.
 - Compare os valores de uma semana com a tela do eVisita antes de divulgar.
-- Se a extração de alguma semana falhar, o valor anterior é mantido (nada zerado é publicado) e a execução
-  fica marcada como falha, para você ser avisado.
+- Se qualquer semana falhar, **nada é publicado** e a execução fica marcada como falha (o site continua como estava).
+  Para publicar as semanas que deram certo mesmo com falha, ponha `PUBLICAR_PARCIAL = True` em `coleta_automatica.py`.
+- Semana com todos os imóveis = 0 não é publicada (a semana atual, ainda sem dados, é apenas ignorada).
 
 ## Virada de ano
 

@@ -31,6 +31,9 @@ ANCORA_DATA = dt.date(2026, 11, 8)
 
 PRIMEIRA_ID = 322            # semana 35: início do histórico
 ULTIMAS_N = 3                # semana atual + 2 anteriores
+# False = se QUALQUER semana falhar, nada é gravado/publicado (site fica como estava).
+# True  = publica as semanas que deram certo e mantém o valor anterior das que falharam.
+PUBLICAR_PARCIAL = False
 FUSO = dt.timezone(dt.timedelta(hours=-4))   # Mato Grosso do Sul (UTC-4)
 
 ARQ_DADOS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "dados.json")
@@ -122,6 +125,38 @@ def fazer_login(driver, usuario, senha):
     WebDriverWait(driver, 30).until(lambda d: "login" not in d.current_url)
 
 
+# ================= SESSÃO / SEMANA =================
+TENTATIVAS = 3     # tentativas por semana; a cada falha o navegador é reaberto
+
+
+def nova_sessao(usuario, senha, antiga=None):
+    if antiga is not None:
+        try:
+            antiga.quit()
+        except Exception:
+            pass
+    driver = base.criar_driver()
+    fazer_login(driver, usuario, senha)
+    return driver
+
+
+def processar_semana(driver, sid, atual, pe_existente):
+    """Retorna a entrada da semana, ou None se a semana atual ainda não tem dados."""
+    ciclo = base.ciclo_da_semana(base.CICLOS_URB_RURAL, sid)
+    ciclo_pe = base.ciclo_da_semana(base.CICLOS_PE, sid)
+    base.AVISOS.clear()
+    df = base.coletar_semana(driver, sid, ciclo, ciclo_pe)
+    if base.AVISOS:
+        # extração incompleta: não publica valores zerados por engano
+        raise RuntimeError("extração incompleta: " + " | ".join(base.AVISOS))
+    if (df["Total_Imoveis"] == 0).all():
+        # tudo zero = o eVisita não trouxe dados (ou a leitura falhou): não publicar
+        if sid == atual:
+            return None
+        raise RuntimeError("sem dados no eVisita (Total_Imoveis = 0 nas três atividades)")
+    return montar_entrada(sid, df, pe_existente, ciclo, ciclo_pe)
+
+
 # ================= MAIN =================
 def main():
     tudo = "--tudo" in sys.argv
@@ -140,31 +175,58 @@ def main():
 
     por_id = {s["id_semana"]: s for s in (existente or {}).get("semanas", [])}
     falhas = []
+    driver = None
 
-    driver = base.criar_driver()
     try:
         print("🔐 Login...")
-        fazer_login(driver, usuario, senha)
+        driver = nova_sessao(usuario, senha)
         print("✅ Login OK")
 
         for n, sid in enumerate(ids, start=1):
             real = sid - base.DESLOC_SEMANA
             print(f"\n==================== SEMANA {real} (id {sid}) — {n}/{len(ids)} ====================")
-            ciclo = base.ciclo_da_semana(base.CICLOS_URB_RURAL, sid)
-            ciclo_pe = base.ciclo_da_semana(base.CICLOS_PE, sid)
-            base.AVISOS.clear()
-            try:
-                df = base.coletar_semana(driver, sid, ciclo, ciclo_pe)
-                if base.AVISOS:
-                    # extração incompleta: não publica valores zerados por engano
-                    raise RuntimeError("extração incompleta: " + " | ".join(base.AVISOS))
-                por_id[sid] = montar_entrada(sid, df, pe_existente, ciclo, ciclo_pe)
-                print(f"✅ Semana {real} coletada")
-            except Exception as e:
-                print(f"❌ Semana {real} falhou: {e}")
-                falhas.append((real, str(e)))
+            semana_ok = False
+            for tentativa in range(1, TENTATIVAS + 1):
+                try:
+                    entrada = processar_semana(driver, sid, atual, pe_existente)
+                    if entrada is None:
+                        print(f"ℹ️ Semana {real} (atual) ainda sem dados no eVisita; não publicada.")
+                    else:
+                        por_id[sid] = entrada
+                        print(f"✅ Semana {real} coletada")
+                    semana_ok = True
+                    break
+                except Exception as e:
+                    print(f"❌ Semana {real}, tentativa {tentativa}/{TENTATIVAS} falhou: {e}")
+                    if tentativa == TENTATIVAS:
+                        falhas.append((real, str(e)))
+                    else:
+                        print("🔄 Reabrindo o navegador e tentando de novo...")
+                        try:
+                            driver = nova_sessao(usuario, senha, driver)
+                        except Exception as e2:
+                            print(f"❌ Não foi possível reabrir a sessão: {e2}")
+                            falhas.append((real, f"sessão: {e2}"))
+                            break
+            if not semana_ok:
+                # navegador possivelmente travado: renova antes da próxima semana
+                try:
+                    driver = nova_sessao(usuario, senha, driver)
+                except Exception as e3:
+                    print(f"❌ Não foi possível reabrir a sessão: {e3}")
+                    break
     finally:
-        driver.quit()
+        if driver is not None:
+            try:
+                driver.quit()
+            except Exception:
+                pass
+
+    if falhas and not PUBLICAR_PARCIAL:
+        print("\n⛔ Houve falhas: NADA foi gravado nem publicado (o site continua como estava).")
+        for real, msg in falhas:
+            print(f"  - Semana {real}: {msg}")
+        sys.exit(1)
 
     if por_id:
         gravar_dados(por_id)
