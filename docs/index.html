@@ -34,8 +34,11 @@ let dados = null, aba = "estadual";
 const dm = iso => iso.split("-").reverse().slice(0, 2).join("/");
 const KG = "Focal - Gramas";   // no site esta coluna aparece em kg (gramas ÷ 1000); os dados continuam em gramas
 const rotulo = c => (c === KG ? "Focal - Kg" : c);
+const SACHE = "Perifocal - Sachê";   // no site aparece em nº de sachês de 100 g (gramas ÷ 100, só inteiros; abaixo de 100 g = 0)
 const fmt = (v, c) => c === KG
   ? (v / 1000).toLocaleString("pt-BR", {minimumFractionDigits: 3, maximumFractionDigits: 3})
+  : c === SACHE
+  ? Math.floor(v / 100 + 1e-6).toLocaleString("pt-BR")
   : Number(v).toLocaleString("pt-BR", PERC.has(c) ? {minimumFractionDigits: 2, maximumFractionDigits: 2} : {maximumFractionDigits: 2});
 
 function montar() {
