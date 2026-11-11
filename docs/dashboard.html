@@ -6,23 +6,6 @@
 <title>Painel de Bloqueios — eVisita Ponta Porã</title>
 <link rel="icon" href="logo.png">
 <link rel="stylesheet" href="estilo.css">
-<style>
-main{max-width:1100px}
-.ctl{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;margin:16px 0}
-select{font:inherit;padding:7px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx)}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin-bottom:18px}
-.k,.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;box-shadow:0 2px 10px rgba(27,47,102,.07);text-align:center}
-.k{border-top:4px solid var(--c);padding:14px 10px}.k small{display:block;color:var(--su);font-size:.78rem}
-.k b{display:block;font-size:1.9rem;color:var(--c);margin:4px 0}.k i{font-style:normal;font-size:.78rem;color:var(--su)}
-.up{color:#1F8F25;font-weight:600}.dn{color:var(--verm);font-weight:600}
-.card{padding:16px 18px 10px;margin:0 auto 18px}.card h2{margin:0;font-size:1.05rem;color:var(--navy)}
-.card .su{margin-bottom:4px}.card.d{border-top:4px solid var(--verde)}
-svg{width:100%;height:auto;display:block}svg text{fill:var(--su);font-size:11px}
-.grow{transform-box:fill-box;transform-origin:50% 100%;animation:g .6s ease-out}@keyframes g{from{transform:scaleY(0)}}
-.hit{fill:transparent}.hit:hover{fill:rgba(30,143,213,.12)}
-#tip{position:fixed;display:none;pointer-events:none;background:var(--navy);color:#fff;padding:6px 10px;border-radius:8px;font-size:.8rem;z-index:9;white-space:nowrap}
-.aviso{background:var(--hl);border:1px solid var(--verde);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.88rem;text-align:center}
-</style>
 </head>
 <body>
 <header class="topo"><img src="logo.png" alt="Prefeitura Municipal de Ponta Porã"><div><h1>Painel de Bloqueios e Resultados</h1><div class="su" id="sub">Carregando…</div></div></header>
@@ -44,6 +27,7 @@ svg{width:100%;height:auto;display:block}svg text{fill:var(--su);font-size:11px}
 <div class="nota" style="text-align:center">Mês de cada semana = mês onde cai a maioria dos dias (domingo a sábado). O último período pode estar em andamento.
 Pendência do mês recalculada sobre os totais; cobertura do mês = soma das semanas.</div>
 </main>
+<footer class="rodape">Prefeitura Municipal de Ponta Porã · Dados extraídos do eVisita · atualização automática às segundas e terças</footer>
 <div id="tip"></div>
 <script src="comum.js"></script>
 <script>
