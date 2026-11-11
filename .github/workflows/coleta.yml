@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tudo:
-        description: "Recoletar tudo, da semana 35 (id 322) até a semana atual"
+        description: "Recoletar tudo, da semana 37 (id 324) até a semana atual"
         type: boolean
         default: false
 
