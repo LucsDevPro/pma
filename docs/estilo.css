@@ -66,3 +66,9 @@ table.rt tr.marcada td{background:#DCEEFB}table.rt td.b{font-weight:800;color:va
  table.rt tr.marcada{border-color:var(--ac);box-shadow:0 0 0 2px rgba(30,143,213,.35)}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ordenação por coluna */
+table.rt th{cursor:pointer;user-select:none}table.rt th:hover{filter:brightness(1.18)}
+table.rt th[data-dir=asc]::after{content:" ▲";font-size:.7em}table.rt th[data-dir=desc]::after{content:" ▼";font-size:.7em}
+.ordbar{display:flex;justify-content:flex-end;margin:0 0 10px;font-size:.85rem;color:var(--su)}
+.ordbar label{display:flex;align-items:center;gap:8px}.ordbar select{max-width:100%;padding:6px 12px}
+@media(max-width:1100px){.ordbar{justify-content:stretch}.ordbar label{width:100%}.ordbar select{flex:1}}
