@@ -156,6 +156,7 @@ def processar_semana(driver, sid, atual, pe_existente):
     ciclo = base.ciclo_da_semana(base.CICLOS_URB_RURAL, sid)
     ciclo_pe = base.ciclo_da_semana(base.CICLOS_PE, sid)
     base.AVISOS.clear()
+    base.AVISOS_LEVES.clear()
     df = base.coletar_semana(driver, sid, ciclo, ciclo_pe)
     if base.AVISOS:
         # extração incompleta: não publica valores zerados por engano
@@ -165,7 +166,11 @@ def processar_semana(driver, sid, atual, pe_existente):
         if sid == atual:
             return None
         raise RuntimeError("sem dados no eVisita (Total_Imoveis = 0 nas três atividades)")
-    return montar_entrada(sid, df, pe_existente, ciclo, ciclo_pe)
+    entrada = montar_entrada(sid, df, pe_existente, ciclo, ciclo_pe)
+    if base.AVISOS_LEVES:
+        entrada["avisos"] = list(base.AVISOS_LEVES)
+        print("⚠️ Semana publicada com aviso:", " | ".join(base.AVISOS_LEVES))
+    return entrada
 
 
 # ================= MAIN =================
