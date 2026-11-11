@@ -41,6 +41,11 @@ function chaveOrdem(td) {
 }
 
 function ordenar(tabela, idx, dir) {   // dir: 1 crescente, -1 decrescente, 0 ordem original
+  tabela.querySelectorAll("tr.det").forEach(r => {   // recolhe os detalhes abertos antes de reordenar
+    const b = r.previousElementSibling && r.previousElementSibling.querySelector(".dtl");
+    if (b) { b.textContent = "Detalhes ▾"; b.setAttribute("aria-expanded", "false"); }
+    r.remove();
+  });
   const tb = tabela.tBodies[0], linhas = [...tb.rows];
   linhas.forEach((r, i) => { if (r.dataset.i === undefined) r.dataset.i = i; });
   linhas.sort((a, b) => {
@@ -67,6 +72,6 @@ function montarOrdenacao(tabela) {   // lista "Ordenar por" (funciona também no
 }
 
 document.addEventListener("click", e => {   // clique no cabeçalho: crescente → decrescente → padrão
-  const th = e.target.closest("table.rt th"); if (!th) return;
+  const th = e.target.closest("table.rt:not(.dt) th"); if (!th) return;
   ordenar(th.closest("table"), th.cellIndex, th.dataset.dir === "asc" ? -1 : th.dataset.dir === "desc" ? 0 : 1);
 });

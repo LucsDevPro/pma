@@ -61,7 +61,9 @@ table.rt tr.marcada td{background:#DCEEFB}table.rt td.b{font-weight:800;color:va
  table.rt tr{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));background:#fff;border:1px solid var(--bd);border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:var(--sombra)}
  table.rt td{border:0;border-bottom:1px solid #E8EEF7;width:auto!important;text-align:left;padding:8px 12px;font-size:.88rem;background:transparent!important}
  table.rt td.s{grid-column:1/-1;background:linear-gradient(135deg,var(--navy),var(--navy2))!important;color:#fff;font-weight:700;box-shadow:none!important}
- table.rt td.s .cp{float:right;color:#fff;border-color:#fff}
+ table.rt td.s>.cp{float:right;color:#fff;border-color:#fff}
+ table.rt td.s .acoes{float:right;margin:0}table.rt td.s .acoes button{color:#fff;border-color:#fff}
+ table.rt tr.det{display:block;background:#F1F7FD}table.rt tr.det td.dd{display:block;padding:10px;grid-column:auto}
  table.rt td.v::before{content:attr(data-label);display:block;font-size:.66rem;font-weight:500;color:var(--su);text-transform:uppercase;letter-spacing:.04em}
  table.rt tr.marcada{border-color:var(--ac);box-shadow:0 0 0 2px rgba(30,143,213,.35)}
 }
@@ -74,3 +76,11 @@ table.rt th[data-dir=asc]::after{content:" ▲";font-size:.7em}table.rt th[data-
 @media(max-width:1100px){.ordbar{justify-content:stretch}.ordbar label{width:100%}.ordbar select{flex:1}}
 .nt{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;font-size:.68em;font-weight:600;background:#E4F1FB;color:var(--navy2);border:1px solid #BBD9F0;cursor:help;white-space:nowrap}
 @media(max-width:1100px){table.rt td.s .nt{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)}}
+/* detalhes por atividade (linha escondida em cada semana) */
+.acoes{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}.acoes button{margin:0}.acoes .cp{margin-left:0}
+.dtl{padding:2px 10px;font-size:.7rem;box-shadow:none;border-color:var(--navy2);color:var(--navy2);background:transparent}
+.dtl:hover{background:var(--navy2);color:#fff;transform:none;box-shadow:none}
+table.rt tr.det td.dd{background:#F1F7FD!important;padding:12px 14px;text-align:left;box-shadow:inset 4px 0 0 var(--ac);animation:subir .3s ease both}
+.dnota{font-size:.82rem;color:var(--su);margin:0 0 8px}
+table.dt{box-shadow:none;border-radius:10px;margin:0;font-size:clamp(.56rem,.9vw,.78rem)}
+table.dt th{background:linear-gradient(135deg,var(--ac),#2A6FB5)}table.dt tbody tr td{background:#fff}table.dt tbody tr:hover td{background:#EAF4FD}

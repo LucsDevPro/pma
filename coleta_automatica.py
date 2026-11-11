@@ -96,7 +96,12 @@ def montar_entrada(id_semana, df, pe_existente, ciclo, ciclo_pe):
         sem_uso.append("adulticida")
     if sem_uso:
         print(f"ℹ️ Semana {id_semana - base.DESLOC_SEMANA}: sem uso de {' e '.join(sem_uso)}")
+    atividades = [   # linhas RURAL, P.E. e URBANA (as 3 primeiras; a última é o TOTAL)
+        {"nome": est.iloc[i, 0], "estadual": nativo(est.iloc[i, 1:].tolist()), "coordenada": nativo(coord.iloc[i, 1:].tolist())}
+        for i in range(len(est) - 1)
+    ]
     return {
+        "atividades": atividades,
         "sem_uso": sem_uso,
         "id_semana": id_semana,
         "semana": id_semana - base.DESLOC_SEMANA,
