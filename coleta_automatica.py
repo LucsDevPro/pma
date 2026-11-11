@@ -89,7 +89,15 @@ def nativo(lista):
 def montar_entrada(id_semana, df, pe_existente, ciclo, ciclo_pe):
     est, coord = base.salvar_relatorio(df, pe_existente)     # sem gravar Excel
     ini, fim = periodo_semana(id_semana)
+    sem_uso = []   # produtos sem nenhum registro na semana (somando RURAL + P.E. + URBANA)
+    if df["Larvicida_Gramas"].sum() == 0:
+        sem_uso.append("larvicida")
+    if df["Adulticida_Gramas"].sum() == 0:
+        sem_uso.append("adulticida")
+    if sem_uso:
+        print(f"ℹ️ Semana {id_semana - base.DESLOC_SEMANA}: sem uso de {' e '.join(sem_uso)}")
     return {
+        "sem_uso": sem_uso,
         "id_semana": id_semana,
         "semana": id_semana - base.DESLOC_SEMANA,
         "ciclo_urb_rural": ciclo - base.DESLOC_CICLO,
@@ -156,7 +164,6 @@ def processar_semana(driver, sid, atual, pe_existente):
     ciclo = base.ciclo_da_semana(base.CICLOS_URB_RURAL, sid)
     ciclo_pe = base.ciclo_da_semana(base.CICLOS_PE, sid)
     base.AVISOS.clear()
-    base.AVISOS_LEVES.clear()
     df = base.coletar_semana(driver, sid, ciclo, ciclo_pe)
     if base.AVISOS:
         # extração incompleta: não publica valores zerados por engano
@@ -166,11 +173,7 @@ def processar_semana(driver, sid, atual, pe_existente):
         if sid == atual:
             return None
         raise RuntimeError("sem dados no eVisita (Total_Imoveis = 0 nas três atividades)")
-    entrada = montar_entrada(sid, df, pe_existente, ciclo, ciclo_pe)
-    if base.AVISOS_LEVES:
-        entrada["avisos"] = list(base.AVISOS_LEVES)
-        print("⚠️ Semana publicada com aviso:", " | ".join(base.AVISOS_LEVES))
-    return entrada
+    return montar_entrada(sid, df, pe_existente, ciclo, ciclo_pe)
 
 
 # ================= MAIN =================

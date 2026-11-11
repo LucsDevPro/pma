@@ -72,4 +72,5 @@ table.rt th[data-dir=asc]::after{content:" ▲";font-size:.7em}table.rt th[data-
 .ordbar{display:flex;justify-content:flex-end;margin:0 0 10px;font-size:.85rem;color:var(--su)}
 .ordbar label{display:flex;align-items:center;gap:8px}.ordbar select{max-width:100%;padding:6px 12px}
 @media(max-width:1100px){.ordbar{justify-content:stretch}.ordbar label{width:100%}.ordbar select{flex:1}}
-.av{color:var(--amar);margin-left:6px;cursor:help;font-weight:700}
+.nt{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;font-size:.68em;font-weight:600;background:#E4F1FB;color:var(--navy2);border:1px solid #BBD9F0;cursor:help;white-space:nowrap}
+@media(max-width:1100px){table.rt td.s .nt{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.45)}}

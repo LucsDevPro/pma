@@ -44,8 +44,7 @@ TOTAL_MUNICIPIO = 47246     # total de imóveis do município (configurável)
 # aplicar os índices 6, 8, 9, 11, 12, 14, 16-22), que já funcionava corretamente.
 FILTRAR_CELULAS_VAZIAS = True
 
-AVISOS = []         # problemas de extração (graves): a semana NÃO deve ser publicada
-AVISOS_LEVES = []   # dado secundário não encontrado (ex.: gramas de larvicida): semana publicada com aviso
+AVISOS = []  # problemas de extração: a semana NÃO deve ser publicada
 
 # Ciclos e as semanas (ids do sistema) que pertencem a cada um: (id_ciclo, semana_inicio, semana_fim)
 CICLOS_URB_RURAL = [
@@ -167,8 +166,8 @@ def extrair_dados(html, nome):
             dados["Adulticida_Gramas"] = num_float(ult[6].get_text())
         else:
             textos = [c.get_text(strip=True) for c in ult]
-            print(f"   [{nome}] ⚠️ linha de depósitos com {len(ult)} células (esperado >= 7): {textos}")
-            AVISOS_LEVES.append(f"{nome}: gramas de larvicida/adulticida não encontrados no eVisita (linha com {len(ult)} células); gravados como 0")
+            # normal: semana sem uso de larvicida/adulticida não traz a linha completa; fica 0
+            print(f"   [{nome}] ℹ️ sem registro de larvicida/adulticida (linha com {len(ult)} células: {textos}); gravado como 0")
 
         if dados["Amostras"] > dados["Total_Imoveis"]:
             AVISOS.append(f"{nome}: Amostras > Total_Imoveis — verifique os índices das colunas")
