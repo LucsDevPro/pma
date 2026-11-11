@@ -5,7 +5,7 @@ Coleta automática (sem janela) para rodar no GitHub Actions.
 - Descobre a semana atual pela data (semanas começam no domingo).
 - Rotina normal: coleta a semana atual e as 2 anteriores (ex.: ids 332, 331, 330).
 - Primeira vez (ainda não existe docs/dados.json) ou com --tudo: coleta da
-  semana 35 (id 322) até a atual.
+  semana 37 (id 324) até a atual.
 - Guarda somente a linha TOTAL de cada semana, nas duas planilhas, em docs/dados.json
   (que alimenta a página docs/index.html).
 
@@ -30,7 +30,7 @@ import pma_nova_colunas as base
 ANCORA_ID = 332
 ANCORA_DATA = dt.date(2026, 11, 8)
 
-PRIMEIRA_ID = 322            # semana 35: início do histórico
+PRIMEIRA_ID = 324            # semana 37: início do histórico (semanas anteriores não são coletadas nem mantidas)
 ULTIMAS_N = 3                # semana atual + 2 anteriores
 # False = se QUALQUER semana falhar, nada é gravado/publicado (site fica como estava).
 # True  = publica as semanas que deram certo e mantém o valor anterior das que falharam.
@@ -108,7 +108,7 @@ def gravar_dados(semanas_por_id):
         "municipio": "Ponta Porã/MS",
         "colunas_estadual": ["IIP" if c == "IIP_2" else c for c in base.COLS_ESTADUAL],
         "colunas_coordenada": list(base.COLS_COORDENADA),
-        "semanas": [semanas_por_id[k] for k in sorted(semanas_por_id)],
+        "semanas": [semanas_por_id[k] for k in sorted(semanas_por_id) if k >= PRIMEIRA_ID],   # descarta semanas antes do início do histórico
     }
     os.makedirs(os.path.dirname(ARQ_DADOS), exist_ok=True)
     with open(ARQ_DADOS, "w", encoding="utf-8") as f:

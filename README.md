@@ -5,7 +5,7 @@ Coleta automática no eVisita e página com **o TOTAL de cada semana** nas duas 
 
 - **Segunda e terça, 03:00 (Ponta Porã)** o GitHub Actions coleta a **semana atual e as 2 anteriores**
   (ex.: ids 332, 331 e 330). As semanas já coletadas são atualizadas, e as novas entram no histórico.
-- **Na primeira execução** (ainda sem `docs/dados.json`) coleta **da semana 35 (id 322) até a atual**.
+- **Na primeira execução** (ainda sem `docs/dados.json`) coleta **da semana 37 (id 324) até a atual**.
 - A página `docs/index.html` (GitHub Pages) lê `docs/dados.json` e mostra uma linha por semana.
 
 ## Como publicar
