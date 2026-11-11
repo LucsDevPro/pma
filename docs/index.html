@@ -9,14 +9,16 @@
 </head>
 <body>
 <header class="topo"><img src="logo.png" alt="Prefeitura Municipal de Ponta Porã">
-  <div><h1>Totais por semana — eVisita</h1><div class="su" id="sub">Carregando…</div></div></header>
+  <div><h1>Totais por semana — eVisita</h1><div class="su" id="sub">Carregando…</div></div><nav class="nav"><a href="index.html" class="on">Totais</a><a href="dashboard.html">Dashboard</a></nav></header>
 <div class="faixa"></div>
 <main>
+  <div class="kicker" id="kicker"></div>
+  <div class="kpis" id="kpis"></div>
   <div class="bar">
     <button id="aba-estadual" aria-selected="true">Planilha Estadual</button>
     <button id="aba-coordenada" aria-selected="false">Resposta Coordenada</button>
     <span class="sp"></span>
-    <a href="dashboard.html"><button>Dashboard</button></a>
+    
     <button data-marcar="todas">Marcar todas</button><button data-marcar="limpar">Limpar</button>
     <button id="copiar">Copiar tabela</button>
   </div>
@@ -47,6 +49,17 @@ function montar() {
   }).join("");
   document.getElementById("conteudo").innerHTML = `<table class="rt" id="tabela"><thead><tr>${cab}</tr></thead><tbody>${lin}</tbody></table>`;
   montarOrdenacao(document.getElementById("tabela"));
+}
+
+function resumo() {   // cartões com a semana mais recente
+  const s = [...dados.semanas].sort((a, b) => b.id_semana - a.id_semana)[0]; if (!s) return;
+  const e = s.estadual, c = s.coordenada, n = v => Number(v).toLocaleString("pt-BR", {maximumFractionDigits: 0});
+  const k = (ic, rot, v, cor) => `<div class="k" style="--c:${cor}"><span class="ic">${ICONES[ic]}</span><small>${rot}</small><b>${v}</b></div>`;
+  document.getElementById("kicker").textContent = `Semana ${s.semana} · ${dm(s.inicio)} a ${dm(s.fim)} — resumo da mais recente`;
+  document.getElementById("kpis").innerHTML =
+    k("imov", "Imóveis trabalhados", n(e[0]), "var(--ac)") + k("cob", "Cobertura", fmt(c[5], "Cobertura (%)") + "%", "var(--navy)") +
+    k("pend", "Índice de pendência", fmt(c[4], "Índice de pendência (%)") + "%", "var(--verm)") +
+    k("foco", "Trabalhados com foco", n(e[1]), "var(--turq)") + k("larv", "Tratados com larvicida", n(e[2]), "var(--bl)");
 }
 
 function detalhe(s) {   // linha escondida com RURAL, P.E. e URBANA da semana
@@ -90,7 +103,7 @@ document.getElementById("copiar").onclick = e => {
 };
 
 fetch("dados.json", {cache: "no-store"}).then(r => { if (!r.ok) throw 0; return r.json(); }).then(d => {
-  dados = d;
+  dados = d; resumo();
   document.getElementById("sub").textContent = d.municipio + " · atualizado em " +
     new Date(d.atualizado_em).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"});
   document.getElementById("nota").textContent = "Linha destacada = semana mais recente (pode estar em andamento). " +

@@ -8,13 +8,13 @@
 <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-<header class="topo"><img src="logo.png" alt="Prefeitura Municipal de Ponta Porã"><div><h1>Painel de Bloqueios e Resultados</h1><div class="su" id="sub">Carregando…</div></div></header>
+<header class="topo"><img src="logo.png" alt="Prefeitura Municipal de Ponta Porã"><div><h1>Painel de Bloqueios e Resultados</h1><div class="su" id="sub">Carregando…</div></div><nav class="nav"><a href="index.html">Totais</a><a href="dashboard.html" class="on">Dashboard</a></nav></header>
 <div class="faixa"></div>
 <main>
 <div class="ctl">
   <button id="bs" aria-pressed="true">Por semana</button><button id="bm" aria-pressed="false">Por mês</button>
   <select id="per" title="Período exibido"><option value="0">Todo o período</option><option value="12">Últimos 12</option><option value="8">Últimos 8</option><option value="4">Últimos 4</option></select>
-  <a href="index.html"><button>Totais (tabela)</button></a>
+  
 </div>
 <div id="aviso"></div>
 <div class="kpis" id="kpis"></div>
@@ -63,17 +63,18 @@ function periodos() {
 function grafico(id, P, campo, fmt, cor, tipo) {
   const W = 900, H = 260, m = {l: 54, r: 16, t: 26, b: 32}, w = W - m.l - m.r, h = H - m.t - m.b, n = P.length;
   const mx = Math.max(...P.map(p => p[campo]), 1) * 1.12, y = v => m.t + h - v / mx * h, bw = w / n, cx = i => m.l + bw * (i + .5);
-  let t = "";
+  let t = `<defs><linearGradient id="gr-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(${cor})"/><stop offset="1" style="stop-color:var(${cor});stop-opacity:.6"/></linearGradient>` +
+    `<linearGradient id="ga-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(${cor});stop-opacity:.35"/><stop offset="1" style="stop-color:var(${cor});stop-opacity:0"/></linearGradient></defs>`;
   for (let k = 0; k <= 4; k++) {
     const yy = y(mx / 4 * k);
     t += `<line x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}" stroke="var(--bd)" stroke-dasharray="${k ? 3 : 0}"/><text x="${m.l - 6}" y="${yy + 4}" text-anchor="end">${fmt(mx / 4 * k)}</text>`;
   }
   const rot = (i, p) => n <= 14 ? `<text x="${cx(i)}" y="${y(p[campo]) - 9}" text-anchor="middle" style="fill:var(--tx);font-weight:600">${fmt(p[campo])}</text>` : "";
   if (tipo === "bar") {
-    P.forEach((p, i) => { t += `<rect class="grow" x="${m.l + bw * i + bw * .18}" y="${y(p[campo])}" width="${bw * .64}" height="${p[campo] / mx * h}" rx="3" fill="var(${cor})"/>` + rot(i, p); });
+    P.forEach((p, i) => { t += `<rect class="grow" x="${m.l + bw * i + bw * .18}" y="${y(p[campo])}" width="${bw * .64}" height="${p[campo] / mx * h}" rx="6" fill="url(#gr-${id})"/>` + rot(i, p); });
   } else {
     const pts = P.map((p, i) => `${cx(i)},${y(p[campo])}`).join(" ");
-    t += `<polygon points="${cx(0)},${m.t + h} ${pts} ${cx(n - 1)},${m.t + h}" fill="var(${cor})" opacity=".13"/><polyline points="${pts}" fill="none" stroke="var(${cor})" stroke-width="3" stroke-linejoin="round"/>`;
+    t += `<polygon points="${cx(0)},${m.t + h} ${pts} ${cx(n - 1)},${m.t + h}" fill="url(#ga-${id})"/><polyline points="${pts}" fill="none" stroke="var(${cor})" stroke-width="3" stroke-linejoin="round"/>`;
     P.forEach((p, i) => { t += `<circle cx="${cx(i)}" cy="${y(p[campo])}" r="4.5" fill="#fff" stroke="var(${cor})" stroke-width="2.5"/>` + rot(i, p); });
   }
   const passo = Math.ceil(n / 14);
@@ -85,12 +86,13 @@ function grafico(id, P, campo, fmt, cor, tipo) {
 }
 
 function kpi(rot, txt, v, a, sobe, cor, extra) {
+  const ic = rot.startsWith("Bloqueios acum") ? "acum" : rot.startsWith("Bloqueios") ? "bloq" : rot.startsWith("Imóveis") ? "imov" : rot.startsWith("Índice") ? "pend" : "cob";
   let s = extra || "—";
   if (a != null) {
     const d = v - a, bom = (d >= 0) === sobe;
     s = `<span class="${d === 0 ? "" : bom ? "up" : "dn"}">${d >= 0 ? "▲" : "▼"} ${Math.abs(d).toLocaleString("pt-BR", {maximumFractionDigits: 2})}</span> vs. anterior`;
   }
-  return `<div class="k" style="--c:${cor}"><small>${rot}</small><b>${txt}</b><i>${s}</i></div>`;
+  return `<div class="k" style="--c:${cor}"><span class="ic">${ICONES[ic]}</span><small>${rot}</small><b>${txt}</b><i>${s}</i></div>`;
 }
 
 function desenhar() {

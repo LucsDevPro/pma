@@ -75,3 +75,14 @@ document.addEventListener("click", e => {   // clique no cabeçalho: crescente �
   const th = e.target.closest("table.rt:not(.dt) th"); if (!th) return;
   ordenar(th.closest("table"), th.cellIndex, th.dataset.dir === "asc" ? -1 : th.dataset.dir === "desc" ? 0 : 1);
 });
+
+// ===== Ícones (traço) usados nos cartões de indicadores =====
+const ICONES = Object.fromEntries(Object.entries({
+  bloq: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+  acum: '<path d="M18 20V10M12 20V4M6 20v-6"/>',
+  imov: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+  pend: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  cob: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  foco: '<circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/>',
+  larv: '<path d="M12 2.7l5.7 5.7a8 8 0 1 1-11.4 0z"/>'
+}).map(([k, v]) => [k, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${v}</svg>`]));
