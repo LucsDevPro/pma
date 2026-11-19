@@ -19,6 +19,7 @@
     <button id="aba-coordenada" aria-selected="false">Resposta Coordenada</button>
     <span class="sp"></span>
     
+    <label class="opt" title="Quando marcado, o botão Copiar leva também os títulos das colunas"><input type="checkbox" id="cab"> Copiar com títulos</label>
     <button data-marcar="todas">Marcar todas</button><button data-marcar="limpar">Limpar</button>
     <button id="copiar">Copiar tabela</button>
   </div>
@@ -113,7 +114,7 @@ fetch("dados.json", {cache: "no-store"}).then(r => { if (!r.ok) throw 0; return 
   document.getElementById("sub").textContent = d.municipio + " · atualizado em " +
     new Date(d.atualizado_em).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"});
   document.getElementById("nota").textContent = "Linha destacada = semana mais recente (pode estar em andamento). " +
-    "TOTAL de cada semana = RURAL + P.E. + URBANA. “Sem larvicida” = nenhum registro de larvicida no eVisita naquela semana (Focal – Gramas = 0). O botão Copiar copia só os valores, na ordem das colunas da planilha oficial; marque várias linhas nas caixas e clique em Copiar para levá-las de uma vez (da semana mais antiga para a mais recente).";
+    "TOTAL de cada semana = RURAL + P.E. + URBANA. “Sem larvicida” = nenhum registro de larvicida no eVisita naquela semana (Focal – Gramas = 0). O botão Copiar copia só os valores, na ordem das colunas da planilha oficial; marque várias linhas nas caixas e clique em Copiar para levá-las de uma vez (da semana mais antiga para a mais recente). Marque “Copiar com títulos” quando quiser levar também o nome das colunas.";
   montar();
 }).catch(() => {
   document.getElementById("sub").textContent = "";

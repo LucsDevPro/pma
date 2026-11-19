@@ -30,7 +30,10 @@ document.addEventListener("click", e => {
   const marcadas = [...b.closest("table").querySelectorAll("input.ck:checked")].map(c => c.closest("tr"))
     .sort((x, y) => x.querySelector("td.s").dataset.o - y.querySelector("td.s").dataset.o);   // semana mais antiga primeiro, mesmo com a tabela ordenada
   const linhas = marcadas.length ? marcadas : [b.closest("tr")];
-  copiarTexto(linhas.map(valoresLinha).join("\n"), b, linhas.length > 1 ? `${linhas.length} linhas copiadas!` : "Copiado!");
+  const caixa = document.getElementById("cab"), comTitulos = !!(caixa && caixa.checked);
+  const titulos = comTitulos ? [[...b.closest("table").tHead.rows[0].cells].slice(1).map(th => th.textContent.trim()).join("\t")] : [];   // sem a coluna "Semana"
+  copiarTexto(titulos.concat(linhas.map(valoresLinha)).join("\n"), b,
+    (linhas.length > 1 ? `${linhas.length} linhas copiadas` : "Copiado") + (comTitulos ? " com títulos!" : "!"));
 });
 
 // ===== Ordenação por coluna (A→Z / Z→A, menor→maior / maior→menor) =====
